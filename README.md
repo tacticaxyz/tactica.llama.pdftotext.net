@@ -2,6 +2,10 @@
 
 A .NET 9 CLI tool for converting PDFs to text files using Ollama.
 
+![TacTicA.Llama.PdfToText.Net](https://img.shields.io/badge/Status-Ready%20for%20Deployment-green) ![.NET 9](https://img.shields.io/badge/.NET-9.0-purple) ![License](https://img.shields.io/badge/License-MIT-blue)
+
+![1](https://github.com/tacticaxyz/tactica.llama.pdftotext.net/blob/main/images/tactica-pdf-to-text-small.png)
+
 ## Features
 
 - Convert PDFs to text files locally, no token costs
