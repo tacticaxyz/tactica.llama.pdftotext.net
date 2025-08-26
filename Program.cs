@@ -14,7 +14,7 @@ outputOption.AddAlias("-o");
 var modelOption = new Option<string>(
     name: "--model",
     description: "Ollama model to use",
-    getDefaultValue: () => "qwen2.5vl:latest");
+    getDefaultValue: () => Constants.OllamaModel);
 modelOption.AddAlias("-m");
 
 var keepImagesOption = new Option<bool>(

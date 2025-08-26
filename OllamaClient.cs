@@ -10,6 +10,7 @@ namespace TacTicA.Llama.PdfToText.Net
         public OllamaClient()
         {
             _httpClient = new HttpClient();
+           // _httpClient.Timeout = TimeSpan.FromMinutes(1); // Set timeout to 10 minutes for long requests on big files
         }
 
         /// <summary>

@@ -18,6 +18,10 @@ A .NET 9 CLI tool for converting PDFs to text files using Ollama.
 - .NET 9.0 or later
 - Ollama installed and running locally
 
+Optionally (DocumentProcessor is implemented in both ways using HttpClient or OllamaSharp):
+- OllamaSharp
+- Microsoft.Extensions.AI
+
 ## Installation
 
 ### From Source

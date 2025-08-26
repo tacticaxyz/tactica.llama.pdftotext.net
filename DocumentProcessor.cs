@@ -1,12 +1,23 @@
+using Microsoft.Extensions.AI;
+using OllamaSharp;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+
 namespace TacTicA.Llama.PdfToText.Net
 {
     public class DocumentProcessor : IDisposable
     {
-        private readonly OllamaClient _ollamaClient;
+        private readonly OllamaClient _ollamaHttpClient;
+        private readonly IOllamaApiClient _ollamaClient;
 
         public DocumentProcessor()
         {
-            _ollamaClient = new OllamaClient();
+            // 2 instances of client: basically both doing the same thing, but one is native...
+            _ollamaHttpClient = new OllamaClient();
+
+            // ...and another is from OlamaSharp lib
+            _ollamaClient = new OllamaApiClient(new Uri(Constants.OllamaBaseUrl), Constants.OllamaModel);
         }
 
         /// <summary>
@@ -36,7 +47,15 @@ namespace TacTicA.Llama.PdfToText.Net
                 Environment.Exit(1);
             }
 
-            if (!await _ollamaClient.CheckForServerAsync())
+
+            //if (!await _ollamaHttpClient.CheckForServerAsync()) // Uncomment if using OllamaClient
+            //{
+            //    Console.Error.WriteLine("Error: Ollama server not running. Please start the server and try again.");
+            //    Environment.Exit(1);
+            //}
+
+            string version = await _ollamaClient.GetVersionAsync(); // Uncomment if using OlamaSharp.OllamaApiClient
+            if (string.IsNullOrWhiteSpace(version))
             {
                 Console.Error.WriteLine("Error: Ollama server not running. Please start the server and try again.");
                 Environment.Exit(1);
@@ -83,7 +102,8 @@ namespace TacTicA.Llama.PdfToText.Net
                         var imageBase64 = await Utils.ImageToBase64Async(imageFile);
 
                         // Transcribe the image
-                        var text = await _ollamaClient.TranscribeImageAsync(imageBase64, model);
+                        //var text = await _ollamaClient.TranscribeImageAsync(imageBase64, model); // Uncomment if using OllamaClient
+                        var text = await TranscribeImageAsync(imageBase64, model); // Uncomment if using OlamaSharp.OllamaApiClient
 
                         // Save transcription
                         var textFile = Path.Combine(textDir, $"{Path.GetFileNameWithoutExtension(imageFile)}.txt");
@@ -122,9 +142,44 @@ namespace TacTicA.Llama.PdfToText.Net
             }
         }
 
+        private async Task<string> TranscribeImageAsync(string imageBase64, string model)
+        {
+            var payload = new
+            {
+                model = model,
+                prompt = Constants.TranscriptionPrompt,
+                stream = false,
+                images = new[] { imageBase64 }
+            };
+
+            var jsonContent = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            await foreach (var stream in _ollamaClient.GenerateAsync(
+                new OllamaSharp.Models.GenerateRequest
+                {
+                    Model = model,
+                    Prompt = Constants.TranscriptionPrompt,
+                    Stream = false,
+                    Images = new[] { imageBase64 }
+                }))
+            {
+                if (stream.Done)
+                {
+                    return stream.Response ?? string.Empty;
+                }
+                else
+                {
+                    throw new Exception($"Generate API call failed: {stream.Response}");
+                }
+            }
+
+            return string.Empty;
+        }
+
         public void Dispose()
         {
-            _ollamaClient?.Dispose();
+            _ollamaHttpClient?.Dispose();
         }
 
         /// <summary>

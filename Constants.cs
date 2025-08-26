@@ -3,6 +3,7 @@ namespace TacTicA.Llama.PdfToText.Net
     public static class Constants
     {
         public const string OllamaBaseUrl = "http://localhost:11434/api";
+        public const string OllamaModel = "qwen2.5vl:latest"; // "llama3.1:8b"; // "gpt -oss:20b"; // 
 
         public const string TranscriptionPrompt = @"Task: Transcribe the page from the provided book image.
 
